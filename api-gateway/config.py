@@ -1,0 +1,9 @@
+class Settings:
+    USER_SERVICE_URL = "http://127.0.0.1:8001"
+    PRODUCT_SERVICE_URL = "http://127.0.0.1:8002"
+    CART_SERVICE_URL = "http://127.0.0.1:8003"
+    ORDER_SERVICE_URL = "http://127.0.0.1:8004"
+    SECRET_KEY = "c43b9ce695290281592492d4eefe4ee0"
+    ALGORITHM = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES = 60
+settings = Settings()
