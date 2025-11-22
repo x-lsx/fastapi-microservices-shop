@@ -14,7 +14,6 @@ class OrderService:
         self.cart_client = cart_client
 
     async def place_order(self, user_id: int):
-        # 1. Get cart
         cart = await self.cart_client.get_cart(user_id)
         items = cart.get("items", [])
         if not items:
@@ -23,7 +22,6 @@ class OrderService:
         order_items: List[dict] = []
         total = 0.0
 
-        # 2. Build reservation payload and reserve atomically on products-service
         reserve_payload = []
         for it in items:
             pid = it.get("product_id")
@@ -31,11 +29,9 @@ class OrderService:
             qty = it.get("quantity")
             reserve_payload.append({"product_id": pid, "size_id": sid, "quantity": qty})
 
-        # Reserve stock; if fails, raise HTTPException
         await self.product_client.reserve_items(reserve_payload)
 
         try:
-            # 3. After reserve succeeded, compute final prices and create order
             for it in items:
                 pid = it.get("product_id")
                 sid = it.get("size_id")
@@ -47,12 +43,10 @@ class OrderService:
 
             order = await self.repo.create_order(user_id=user_id, total_price=total, items=order_items)
 
-            # 4. Clear cart
             await self.cart_client.clear_cart(user_id)
 
             return order
         except Exception:
-            # If order creation failed after reserve, release reserved stock
             try:
                 await self.product_client.release_items(reserve_payload)
             except Exception:
