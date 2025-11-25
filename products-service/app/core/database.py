@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 
 from .config import settings
 
-engine = create_async_engine(settings.database_url, echo=True, future=True,  connect_args={"check_same_thread": False})
+engine = create_async_engine(settings.database_url, echo=True, future=True)
 
 AsyncSessionLocal = async_sessionmaker(
     engine,
@@ -27,13 +27,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
-# Асинхронная инициализация БД
-async def init_db():
-    """Создание всех таблиц в БД"""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-# Функция для закрытия соединений
 async def close_db():
     """Закрытие соединений с БД"""
     await engine.dispose()

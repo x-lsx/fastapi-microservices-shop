@@ -1,33 +1,39 @@
 from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
-from typing import List, Union
-import os 
+from typing import List
+import os
+
 
 class Settings(BaseSettings):
-    app_name: str = "FastAPI Shop"
-    debug: bool = False
-    database_url: str = "sqlite+aiosqlite:///./shop.db"  
+    app_name: str = Field("FastAPI Shop", alias="APP_NAME")
+    debug: bool = Field(False, alias="DEBUG")
 
-    cors_origins: Union[List[str], str] = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-        "http://localhost:8000",
-        
-    ]
+    db_host: str = Field("localhost", alias="DB_HOST")
+    db_port: int = Field(5432, alias="DB_PORT")
+    db_name: str = Field("shop", alias="DB_NAME")
+    db_user: str = Field("postgres", alias="DB_USER")
+    db_pass: str = Field("postgres", alias="DB_PASS")
 
-    SECRET_KEY: str = Field("super_secret_key_change_me", alias="JWT_SECRET")
-    ALGORITHM: str = Field("HS256", alias="JWT_ALGORITHM")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(120, alias="ACCESS_TOKEN_EXPIRE_MINUTES") 
+    database_url: str = Field(..., alias="DATABASE_URL")
 
-    static_dir: str = "static"
-    images_dir: str = "static/images"
+    secret_key: str = Field("super_secret_key", alias="JWT_SECRET")
+    algorithm: str = Field("HS256", alias="JWT_ALGORITHM")
+    access_token_expire: int = Field(120, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
+
+    cors_origins: str = Field("", alias="CORS_ORIGINS")
+
+    static_dir: str = Field("static", alias="STATIC_DIR")
+    images_dir: str = Field("static/images", alias="IMAGES_DIR")
+
+    @property
+    def async_database_url(self) -> str:
+        return self.database_url
+    
     
     class Config:
         env_file = Path(__file__).resolve().parent.parent.parent / ".env"
+        env_file_encoding = "utf-8"
 
 
 settings = Settings()

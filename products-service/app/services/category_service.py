@@ -25,7 +25,7 @@ class CategoryService:
     async def create(self, data: CategoryCreate) -> Category:
         existing = await self.repo.get_by_slug(data.slug)
         if existing:
-            raise ValueError(f"Category with slug '{data.slug}' already exists")
+            raise ValueError(f"Category with slug '{data.slug}' s")
 
         all_cats = await self.repo.get_all()
         if any(c.name == data.name for c in all_cats):

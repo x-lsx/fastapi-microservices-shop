@@ -8,8 +8,6 @@ from fastapi.security import OAuth2PasswordBearer
 from config import settings
 
 
-# ----------------------- CONFIG -----------------------
-
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
@@ -68,8 +66,6 @@ async def get_current_user(request: Request):
     }
 
 
-# ----------------------- UNIVERSAL PROXY -----------------------
-
 async def proxy_request(request: Request, service_url: str, path: str):
     user = await get_current_user(request)
 
@@ -118,6 +114,26 @@ async def login(request: Request):
     )
 
     return {"access_token": token, "token_type": "bearer"}
+
+@app.api_route("/users/register", methods=["POST"])
+async def proxy_user_register(request: Request):
+    """Проксируем регистрацию"""
+    return await proxy_request(
+        request,
+        settings.USER_SERVICE_URL,
+        "/users/register"
+    )
+
+
+@app.api_route("/users/me", methods=["GET"])
+async def proxy_user_me(request: Request):
+    """Проксируем получение текущего пользователя"""
+
+    return await proxy_request(
+        request,
+        settings.USER_SERVICE_URL,
+        "/users/me"
+    )
 
 
 # ----------------------- PROXY ROUTES -----------------------

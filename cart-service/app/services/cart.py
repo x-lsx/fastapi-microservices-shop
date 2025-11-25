@@ -46,11 +46,7 @@ class CartService:
         return await self.get_cart(user_id)
 
     async def change_item_quantity(self, user_id: int, product_id: int, size_id: int, delta: int):
-        """Increase or decrease item quantity by delta (delta can be negative).
 
-        If resulting quantity <= 0, the item is removed.
-        When increasing, validate stock against the new total quantity.
-        """
         if delta == 0:
             return await self.get_cart(user_id)
 
@@ -61,7 +57,7 @@ class CartService:
 
         if not item:
             if delta > 0:
-                # Adding new item via increment: validate and create
+
                 product_data = await self.client.validate_product_and_size(product_id, size_id, delta)
                 await self.repo.add_item(cart, product_id, size_id, delta, product_data["product"]["price"])
                 return await self.get_cart(user_id)
@@ -73,7 +69,6 @@ class CartService:
             await self.repo.remove_item(item)
             return await self.get_cart(user_id)
 
-        # If increasing, validate total quantity against stock
         if delta > 0:
             await self.client.validate_product_and_size(product_id, size_id, new_qty)
 

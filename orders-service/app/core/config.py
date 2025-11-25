@@ -15,20 +15,22 @@ class Settings(BaseSettings):
     db_user: str = Field("postgres", alias="DB_USER")
     db_pass: str = Field("postgres", alias="DB_PASS")
 
-    database_url: str = Field(
-        default="sqlite+aiosqlite:///./shop.db",
-        alias="DATABASE_URL"
-    )
+    database_url: str = Field(..., alias="DATABASE_URL")
 
     secret_key: str = Field("super_secret_key", alias="JWT_SECRET")
     algorithm: str = Field("HS256", alias="JWT_ALGORITHM")
     access_token_expire: int = Field(120, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
-
+    cart_service_url: str = Field(..., alias="CART_SERVICE_URL")
+    product_service_url: str = Field(..., alias="PRODUCT_SERVICE_URL")
     cors_origins: str = Field("", alias="CORS_ORIGINS")
 
     static_dir: str = Field("static", alias="STATIC_DIR")
     images_dir: str = Field("static/images", alias="IMAGES_DIR")
 
+    @property
+    def async_database_url(self) -> str:
+        return self.database_url
+    
     class Config:
         env_file = Path(__file__).resolve().parent.parent.parent / ".env"
         env_file_encoding = "utf-8"

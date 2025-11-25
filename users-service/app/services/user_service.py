@@ -46,3 +46,7 @@ class UserService:
         updated_user = await self.user_repository.update(user_id, update_data
                                                          )
         return UserResponse.model_validate(updated_user)
+
+    async def get_by_id(self, user_id: int):
+        """Return user model by id (wrapper around repository)."""
+        return await self.user_repository.get_by_id(user_id)

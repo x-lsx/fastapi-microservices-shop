@@ -14,12 +14,12 @@ class ProductCreate(ProductBase):
     sizes: Optional[List[ProductSizeCreate]] = []
 
 class ProductUpdate(BaseModel):
-    name: Optional[str]
-    price: Optional[float]
-    description: Optional[str]
-    category_id: Optional[int]
-    sizes: Optional[List[ProductSizeCreate]]
-
+    name: Optional[str] = None
+    price: Optional[float] = None
+    description: Optional[str] = None
+    category_id: Optional[int] = None
+    sizes: Optional[List[ProductSizeCreate]] = None
+    
 class ProductResponse(BaseModel):
     id: int
     name: str

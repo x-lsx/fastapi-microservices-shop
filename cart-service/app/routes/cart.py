@@ -5,10 +5,10 @@ from ..core.database import get_db
 from ..services.cart import CartService
 from ..schemas.cart import CartItemCreate, CartItemUpdate, CartResponse, CartItemResponse, CartItemChange
 from ..core.client import ProductClient
-
+from ..core.config import settings
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
-product_client = ProductClient(base_url="http://localhost:8002")
+product_client = ProductClient(base_url=settings.product_service_url)
 
 async def get_cart_service(db: AsyncSession = Depends(get_db)) -> CartService:
     return CartService(db=db, product_client=product_client)

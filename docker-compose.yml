@@ -1,0 +1,132 @@
+services:
+  # === БАЗЫ ДАННЫХ ===
+  users-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users_db
+    volumes:
+      - users-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  products-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: products_db
+    volumes:
+      - products-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cart-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cart_db
+    volumes:
+      - cart-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  orders-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders_db
+    volumes:
+      - orders-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # === СЕРВИСЫ ===
+  users-service:
+    build: ./users-service
+    env_file:
+      - ./users-service/.env
+    depends_on:
+      users-db:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+
+  products-service:
+    build: ./products-service
+    env_file:
+      - ./products-service/.env          # теперь через .env файл
+    depends_on:
+      products-db:
+        condition: service_healthy
+    ports:
+      - "8002:8000"
+
+  cart-service:
+    build: ./cart-service
+    env_file:
+      - ./cart-service/.env
+    depends_on:
+      cart-db:
+        condition: service_healthy
+    ports:
+      - "8003:8000"
+
+  orders-service:
+    build: ./orders-service
+    env_file:
+      - ./orders-service/.env
+    depends_on:
+      orders-db:
+        condition: service_healthy
+    ports:
+      - "8004:8000"
+
+  # === API GATEWAY & NGINX ===
+  api-gateway:
+    build: ./api-gateway
+
+    depends_on:
+      - users-service
+      - products-service
+      - cart-service
+      - orders-service
+    ports:
+      - "8000:8000"
+
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-gateway
+
+# === ТОМЫ ===
+volumes:
+  users-db-data:
+  products-db-data:
+  cart-db-data:
+  orders-db-data:

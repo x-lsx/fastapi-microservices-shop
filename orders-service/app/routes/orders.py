@@ -6,12 +6,12 @@ from app.core.database import get_db
 from app.services.order_service import OrderService
 from app.schemas.order import OrderResponse
 from app.core.client import ProductClient, CartClient
-
+from app.core.config import settings
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 # clients - point to product and cart services
-product_client = ProductClient(base_url="http://localhost:8002")
-cart_client = CartClient(base_url="http://localhost:8003")
+product_client = ProductClient(base_url=settings.product_service_url)
+cart_client = CartClient(base_url=settings.cart_service_url)
 
 
 async def get_order_service(db: AsyncSession = Depends(get_db)) -> OrderService:
