@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 from typing import List
 import os
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 class Settings(BaseSettings):
     app_name: str = Field("FastAPI Shop", alias="APP_NAME")
@@ -32,7 +33,12 @@ class Settings(BaseSettings):
     
     
     class Config:
-        env_file = Path(__file__).resolve().parent.parent.parent / ".env"
+        
+        env_file = (
+            BASE_DIR / ".env.docker"
+            if os.getenv("ENV") == "docker"
+            else BASE_DIR / ".env.local"
+        )
         env_file_encoding = "utf-8"
 
 
