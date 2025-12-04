@@ -1,9 +1,9 @@
 # FastAPI Microservices Shop - Масштабируемый интернет-магазин на микросервисах
 
-## Содержание
+## 📃 Содержание
 - [[#❗Немного о проекте]]
 - [[#💻Технологический стек]]
-- [[#🏗️ Архитектура]]
+- [🏗️ Архитектура](#-Архитектура)
 - [[#📡 API Endpoints]]
 ## ❗Немного о проекте
 - **Микросервисная архитектура** - каждый сервис независим и масштабируем
@@ -26,19 +26,44 @@
 - **Alembic** — миграции БД.
 - **Docker & Docker Compose** — контейнеризация и управление.
 - **PostgreSQL** — основная БД для данных.
-
+## 📋 Предварительные требования
+- Docker и Docker Compose (для контейнеризации)
+- Python 3.9+ (для локальной разработки)
+- PostgreSQL 14+ (или использовать Docker-версию)
+- Git
 ## 🏗️ Архитектура
 
 Проект состоит из следующих микросервисов:
 
 | Сервис              | Порт | Описание                                   |
 | ------------------- | ---- | ------------------------------------------ |
-| 🎪 API Gateway      | 8000 | Единая точка входа, маршрутизация запросов |
+| 🌐 API Gateway      | 8000 | Единая точка входа, маршрутизация запросов |
 | 👥 Users Service    | 8001 | Управление пользователями и аутентификация |
 | 📦 Products Service | 8002 | Каталог товаров и управление продуктами    |
 | 👜 Cart Service     | 8003 | Управление корзиной                        |
 | 🛒 Order Service    | 8004 | Оформление и управление заказами           |
 | 🗄️ PostgreSQL      | 5432 | Основная база данных                       |
+
+### Модели данных
+
+```markdown
+Пользователи (Users Service)
+- `User`: id, email, username, first_name, last_name, hashed_password, is_superuser,  is_active, address, created_at
+
+Товары (Products Service)  
+- `Product`: id, name, description, price, category_id, images
+- `Category`: id, name, slug
+- `Size`: id, value
+- `ProductSize`: id, product_id, size_id, quantity
+
+Корзина (Cart Service)
+- `Cart`: id, user_id
+- `CartItem`: id, cart_id, product_id, size_id, quantity, size_id, price
+
+Заказы (Orders Service)
+- `Order`: id, user_id, price, status, address, created_at
+- `OrderItem`: id, order_id, product_id, quantity, price
+```
 
 ## 📡 API Endpoints
 ### 🔐 Аутентификация и Пользователи
@@ -49,5 +74,107 @@
 ### 📦 Товары
 - `GET /products` - Список товаров
 - `GET /products/{product_id}` - Получить товар
+- `GET /products/category/{slug}` - Получить список товаров по категории
 - `POST /products/create` - Создать товар (admin)
 - `PUT /products/update/{product_id}` - Обновить товар (admin)
+- `DELETE /products/delete/{product_id}` - Удалить товар (admin)
+- `GET /catagories/` - Список категорий
+- `GET /categories/{category_id}` - Получить категорию
+- `POST /categories/create` - Создать категорию (admin)
+- `PUT /categories/update/{category_id}` - Обновить категорию (admin)
+- `DELETE /categories/delete/{category_id}` - Удалить категорию (admin)
+- `GET /sizes` - Получить список размеров
+- `POST /sizes/create` - Создать размер
+- `PUT /sizes/update/{size_id}` - Обновить размер
+- `DELETE /sizes/delete/{size_id}` - Удалить размер
+### 💿 Корзина 
+- `GET /cart` - Получить корзину
+- `POST /cart/add` - Добавить товар в корзину
+- `DELETE /cart/remove` - Удалить товар из корзины
+- `DELETE /cart/clear` - Очистить корзину
+### 👜 Заказы
+- `GET orders/` - Получить список заказов
+- `GET orders/{order_id}` - Получить заказ
+- `POST orders/create` - Создать заказ из корзины
+
+## ✈️ Запуск
+
+### Клонирование 
+```
+git clone <url-репозитория>
+cd fastapi-microservices-shop
+```
+### Запуск сервисов
+```
+# 1 Терминал (сервис пользователей)
+cd users-service
+python -m venv venv 
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+alembic revision --autogenerate -m "Описание изменений"
+alembic upgrade head
+uvicorn app.main:app --port 8001 --reload
+```
+```
+# 2 Терминал (сервис товаров)
+cd products-service
+python -m venv venv 
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+alembic revision --autogenerate -m "Описание изменений"
+alembic upgrade head
+uvicorn app.main:app --port 8002 --reload
+```
+```
+# 3 Терминал (сервис корзины)
+cd cart-service
+python -m venv venv 
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+alembic revision --autogenerate -m "Описание изменений"
+alembic upgrade head
+uvicorn app.main:app --port 8003 --reload
+```
+```
+# 4 Терминал (сервис заказов)
+cd orders-service
+python -m venv venv 
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+alembic revision --autogenerate -m "Описание изменений"
+alembic upgrade head
+uvicorn app.main:app --port 8004 --reload
+```
+```
+# 5 Терминал (api-gateway)
+cd api-gateway
+python -m venv venv 
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+uvicorn main:app --port 8000 --reload
+```
+
+### Через Docker compose
+```bash
+# Сборка и запуск всех сервисов
+docker-compose up -d --build
+
+# Просмотр логов
+docker-compose logs -f
+
+# Остановка сервисов
+docker-compose down
+
+# Остановка с удалением томов
+docker-compose down -v
+```
+### Доступ к приложению
+- **API Gateway**: http://localhost:8000
+- **Сервисы**: 8001 (Пользователи), 8002 (Товары), 8003 (Корзина), 8004 (Заказы)
+
+
